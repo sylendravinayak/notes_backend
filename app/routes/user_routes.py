@@ -39,4 +39,4 @@ def get_workspace_token(workspace_id: str, depends=):
 
 
     
-    #return {"workspace": workspace}
+    return {"workspace": workspace}
