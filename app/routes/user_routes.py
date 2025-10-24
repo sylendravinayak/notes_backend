@@ -43,4 +43,4 @@ def get_workspace_token(workspace_id: str,token: str = Depends(oauth2_scheme)):
         )
 
     workspace = collabs.find_one({"workspace_id": workspace_id,"user_id": payload['user_id']})
-    new_token = create_access_token({"user_id": payload['user_id'],"workspace_name":workspace['workspace_name'],"workspace_id":workspace['workspace_id'],"access":workspace['access']})
+    return  create_access_token({"user_id": payload['user_id'],"workspace_name":workspace['workspace_name'],"workspace_id":workspace['workspace_id'],"access":workspace['access']})
