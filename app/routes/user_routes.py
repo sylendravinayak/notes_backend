@@ -1,9 +1,10 @@
-from fastapi import APIRouter, HTTPException, status,Request
+from fastapi import APIRouter, HTTPException, status,Depends
 from schema.user_schema import UserBase
 from models.users import User
 from auth.hashing import hash_password, verify_password
-from auth.jwt_handler import create_access_token
-from database import workspaces
+from auth.jwt_handler import ALGORITHM, SECRET_KEY, create_access_token,oauth2_scheme
+from database import workspaces,collabs
+from jose import JWTError, jwt
 router = APIRouter()
 
 @router.post("/sign-up/")
@@ -28,15 +29,18 @@ def login_user(user: UserBase):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password."
         )
-    token = create_access_token({"sub": str(existing_user.id),"workspace_name":"personal","workspace_id":str(existing_user.id),"access":"rw"})
+    token = create_access_token({"user_id": str(existing_user.id),"workspace_name":"personal","workspace_id":str(existing_user.id),"access":"rw"})
     return {"token": token}
 
 
 @router.get("/workspace/{workspace_id}/")
-def get_workspace_token(workspace_id: str, depends=):
-    # Logic to retrieve workspace information
-    workspace = workspaces.find_one({"_id": workspace_id})
+def get_workspace_token(workspace_id: str,token: str = Depends(oauth2_scheme)):
+    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    if not payload:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token."
+        )
 
-
-    
-    #return {"workspace": workspace}
+    workspace = collabs.find_one({"workspace_id": workspace_id,"user_id": payload['user_id']})
+    new_token = create_access_token({"user_id": payload['user_id'],"workspace_name":workspace['workspace_name'],"workspace_id":workspace['workspace_id'],"access":workspace['access']})
