@@ -1,7 +1,7 @@
 
 from motor.motor_asyncio import AsyncIOMotorClient
 
-mongourl = ""
+mongourl = "mongodb://localhost:27017/"
 
 engine = AsyncIOMotorClient(mongourl)
 
